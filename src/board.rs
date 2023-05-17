@@ -7,7 +7,7 @@ pub struct Board {
     tiles: Vec<Vec<Tile>>,
 }
 
-pub const BOARD_SIZE: usize = 100;
+pub const BOARD_SIZE: usize = 10;
 
 impl Board {
     pub fn new() -> Self {
