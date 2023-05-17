@@ -64,9 +64,24 @@ element.addEventListener("click", function (event) {
     const row = Math.min(Math.floor(canvasTop / (size + 1)), canvas.height - 1);
     const col = Math.min(Math.floor(canvasLeft / (size + 1)), canvas.width - 1);
 
-    placeTile(row, col, { red: 255, green: 0, blue: 0 });
+    const colorChoice = document.getElementById("color-choice").value;
+
+    placeTile(row, col, hexToRGB(colorChoice));
     getBoard();
 });
+
+function hexToRGB(hex) {
+    console.log(hex);
+    const num = parseInt(hex.substring(1), 16);
+    const red = (num >> 16) & 255;
+    const green = (num >> 8) & 255;
+    const blue = num & 255;
+    return { red, green, blue };
+}
+
+setInterval(() => {
+    getBoard();
+}, 500);
 
 
 
