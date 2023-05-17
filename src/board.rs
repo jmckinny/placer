@@ -7,7 +7,7 @@ pub struct Board {
     tiles: Vec<Vec<Tile>>,
 }
 
-pub const BOARD_SIZE: usize = 10;
+pub const BOARD_SIZE: usize = 50;
 
 impl Board {
     pub fn new() -> Self {
@@ -26,6 +26,10 @@ impl Board {
             .get_mut(col)
             .expect("Failed to get col");
         tile.set_color(req.get_color());
+    }
+
+    pub fn get_size(&self) -> usize {
+        self.tiles.len()
     }
 }
 

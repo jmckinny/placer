@@ -26,6 +26,7 @@ async fn main() {
         .route("/health", get(|| async { "Health Check" }))
         .route("/api/v1/place", post(place))
         .route("/api/v1/board", get(get_board))
+        .route("/api/v1/size", get(get_size))
         .with_state(shared_state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -98,4 +99,9 @@ async fn index_js() -> impl IntoResponse {
     } else {
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
+}
+
+async fn get_size(State(state): State<AppState>) -> impl IntoResponse {
+    let size = state.read().await.board.get_size();
+    Json(size)
 }

@@ -1,4 +1,5 @@
-let boardLength;
+const SIZE = 12 // px
+let BOARD_SIZE;
 function getBoard() {
     fetch("/api/v1/board")
         .then(response => {
@@ -48,27 +49,6 @@ function placeTile(row, col, rgb) {
     }).catch((res) => { console.error(res) })
 }
 
-getBoard();
-const element = document.getElementById("board-display");
-element.addEventListener("click", function (event) {
-    const canvas = document.getElementById("board-display");
-    const boundingRect = canvas.getBoundingClientRect();
-
-    const scaleX = canvas.width / boundingRect.width;
-    const scaleY = canvas.height / boundingRect.height;
-
-    const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
-    const canvasTop = (event.clientY - boundingRect.top) * scaleY;
-    const size = canvas.width / boardLength;
-
-    const row = Math.min(Math.floor(canvasTop / (size + 1)), canvas.height - 1);
-    const col = Math.min(Math.floor(canvasLeft / (size + 1)), canvas.width - 1);
-
-    const colorChoice = document.getElementById("color-choice").value;
-
-    placeTile(row, col, hexToRGB(colorChoice));
-    getBoard();
-});
 
 function hexToRGB(hex) {
     console.log(hex);
@@ -79,9 +59,52 @@ function hexToRGB(hex) {
     return { red, green, blue };
 }
 
-setInterval(() => {
+function setSize() {
+    const canvas = document.getElementById("board-display");
+    fetch("/api/v1/size").then((res) => {
+        res.json().then((data) => {
+            BOARD_SIZE = Number(data);
+            console.log("Board size " + BOARD_SIZE);
+            canvas.height = (SIZE + 1) * BOARD_SIZE + 1;
+            canvas.width = (SIZE + 1) * BOARD_SIZE + 1;
+        })
+    });
+}
+
+let boardLength;
+function main() {
+
+    setSize();
+
     getBoard();
-}, 500);
+
+    const element = document.getElementById("board-display");
+    element.addEventListener("click", function (event) {
+        const canvas = document.getElementById("board-display");
+        const boundingRect = canvas.getBoundingClientRect();
+
+        const scaleX = canvas.width / boundingRect.width;
+        const scaleY = canvas.height / boundingRect.height;
+
+        const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+        const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+        const row = Math.min(Math.floor(canvasTop / (SIZE + 1)), canvas.height - 1);
+        const col = Math.min(Math.floor(canvasLeft / (SIZE + 1)), canvas.width - 1);
+
+        const colorChoice = document.getElementById("color-choice").value;
+
+        placeTile(row, col, hexToRGB(colorChoice));
+        getBoard();
+    });
+
+    setInterval(() => {
+        getBoard();
+    }, 500);
+}
+
+main()
+
 
 
 
