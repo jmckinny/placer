@@ -10,8 +10,9 @@ use axum::{
 };
 use board::Board;
 use std::net::SocketAddr;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tile::TileReq;
+use tokio::sync::RwLock;
 
 #[tokio::main]
 async fn main() {
@@ -73,7 +74,7 @@ async fn place(
         tracing::info!("Dropped request {req:?}");
         return StatusCode::BAD_REQUEST;
     }
-    let mut lock = state.write().unwrap();
+    let mut lock = state.write().await;
     let board = &mut lock.board;
     board.set_tile(&req);
 
@@ -82,8 +83,7 @@ async fn place(
 }
 
 async fn get_board(State(state): State<AppState>) -> Json<Board> {
-    let lock = state.read().unwrap();
-    tracing::info!("Processed get board state");
+    let lock = state.read().await;
     Json(lock.board.clone())
 }
 
