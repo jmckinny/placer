@@ -1,6 +1,8 @@
+use serde::Serialize;
+
 use crate::tile::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Board {
     tiles: Vec<Vec<Tile>>,
 }

@@ -4,7 +4,7 @@ use axum::{
     extract::{self, State},
     http::StatusCode,
     routing::{get, post},
-    Router,
+    Json, Router,
 };
 use board::Board;
 use std::sync::{Arc, RwLock};
@@ -17,6 +17,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/api/v1/place", post(place))
+        .route("/api/v1/board", get(get_board))
         .with_state(shared_state);
 
     println!("Running at http://127.0.0.1:3000/");
@@ -41,11 +42,15 @@ async fn place(
     if !req.is_valid() {
         return StatusCode::BAD_REQUEST;
     }
-    let lock = state.as_ref();
-    let mut state_data = lock.write().unwrap();
-    let board = &mut state_data.board;
+    let mut lock = state.write().unwrap();
+    let board = &mut lock.board;
     board.set_tile(&req);
 
     println!("Processed: {req:?}");
     StatusCode::OK
+}
+
+async fn get_board(State(state): State<AppState>) -> Json<Board> {
+    let lock = state.read().unwrap();
+    Json(lock.board.clone())
 }
