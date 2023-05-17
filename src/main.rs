@@ -7,22 +7,26 @@ use axum::{
     Json, Router,
 };
 use board::Board;
+use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use tile::TileReq;
 
 #[tokio::main]
 async fn main() {
     let shared_state = Arc::new(RwLock::new(StateData::default()));
+    // Setup logging
+    tracing_subscriber::fmt().init();
 
     let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
+        .route("/", get(|| async { "Health Check" }))
         .route("/api/v1/place", post(place))
         .route("/api/v1/board", get(get_board))
         .with_state(shared_state);
 
-    println!("Running at http://127.0.0.1:3000/");
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    tracing::info!("listening on http://{:?}", addr);
+
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
@@ -40,17 +44,19 @@ async fn place(
     extract::Json(req): extract::Json<TileReq>,
 ) -> StatusCode {
     if !req.is_valid() {
+        tracing::info!("Dropped request {req:?}");
         return StatusCode::BAD_REQUEST;
     }
     let mut lock = state.write().unwrap();
     let board = &mut lock.board;
     board.set_tile(&req);
 
-    println!("Processed: {req:?}");
+    tracing::info!("Processed request {req:?}");
     StatusCode::OK
 }
 
 async fn get_board(State(state): State<AppState>) -> Json<Board> {
     let lock = state.read().unwrap();
+    tracing::info!("Processed get board state");
     Json(lock.board.clone())
 }
